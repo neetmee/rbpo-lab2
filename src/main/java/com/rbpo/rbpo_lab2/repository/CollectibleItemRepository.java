@@ -1,12 +1,13 @@
 package com.rbpo.rbpo_lab2.repository;
 
-import java.util.List;
-import org.springframework.stereotype.Repository;
 import com.rbpo.rbpo_lab2.model.CollectibleItem;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
-public class CollectibleItemRepository extends InMemoryRepository<CollectibleItem> {
-    public List<CollectibleItem> findByOwnerId(Long ownerId) {
-        return stream().filter(i -> i.ownerId().equals(ownerId)).toList();
-    }
+public interface CollectibleItemRepository extends JpaRepository<CollectibleItem, Long> {
+    List<CollectibleItem> findAllByOwnerId(Long ownerId);
+    void deleteAllByOwnerId(Long ownerId);
 }

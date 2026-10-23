@@ -1,12 +1,14 @@
 package com.rbpo.rbpo_lab2.repository;
 
-import java.util.List;
-import org.springframework.stereotype.Repository;
 import com.rbpo.rbpo_lab2.model.AuctionLot;
+import com.rbpo.rbpo_lab2.model.LotStatus;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
-public class AuctionLotRepository extends InMemoryRepository<AuctionLot> {
-    public List<AuctionLot> findByItemId(Long itemId) {
-        return stream().filter(l -> l.itemId().equals(itemId)).toList();
-    }
+public interface AuctionLotRepository extends JpaRepository<AuctionLot, Long> {
+    boolean existsByItemIdAndStatusIn(Long itemId, List<LotStatus> statuses);
+    List<AuctionLot> findAllByItemId(Long itemId);
 }
