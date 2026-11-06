@@ -1,99 +1,24 @@
 {
   "info": {
-    "_postman_id": "b3e2a149-8c6f-4d92-bf31-0192837465ab",
-    "name": "Auction API - Lab 3",
-    "description": "CRUD по всем сущностям и 5 бизнес-операций онлайн-аукциона с автосохранением ID и негативными сценариями.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "_postman_id": "c5b9920f-7403-4bc2-a1ec-6d6562e1c968",
+    "name": "лаба 2 - все операции",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "59006011",
+    "_collection_link": "https://go.postman.co/collection/59006011-c5b9920f-7403-4bc2-a1ec-6d6562e1c968?source=collection_link"
   },
   "item": [
     {
-      "name": "1. Пользователи (CRUD)",
+      "name": "0. Auth",
       "item": [
         {
-          "name": "1.1 Создать продавца",
+          "name": "GET CSRF Token",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('sellerId', j.id); } catch (e) {}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/users",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"seller_{{$timestamp}}\",\n  \"email\": \"seller{{$timestamp}}@mail.ru\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "1.2 Создать покупателя",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('buyerId', j.id); } catch (e) {}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/users",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"buyer_{{$timestamp}}\",\n  \"email\": \"buyer{{$timestamp}}@mail.ru\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "1.3 Список пользователей",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                  "pm.test(\"Статус 200 OK\", () => pm.response.to.have.status(200));\r\nconst res = pm.response.json();\r\npm.collectionVariables.set(\"csrf\", res.token);"
                 ]
               }
             }
@@ -102,171 +27,280 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users"]
+              "raw": "{{baseUrl}}/api/auth/csrf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "csrf"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "1.4 Пользователь по id",
+          "name": "Register Seller",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/users/{{sellerId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "{{sellerId}}"]
-            }
-          }
-        },
-        {
-          "name": "1.5 Обновить пользователя",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/users/{{sellerId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "{{sellerId}}"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"seller_upd_{{$timestamp}}\",\n  \"email\": \"seller{{$timestamp}}@mail.ru\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "1.6 Создать временного пользователя",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('tmpUserId', j.id); } catch (e) {}"
+                  "pm.test(\"Статус 201 Created\", () => pm.response.to.have.status(201));"
                 ]
               }
             }
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/users",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users"]
-            },
+            "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"tmp_{{$timestamp}}\",\n  \"email\": \"tmp{{$timestamp}}@mail.ru\"\n}",
+              "raw": "{\r\n  \"username\": \"seller\",\r\n  \"email\": \"seller@mail.ru\",\r\n  \"password\": \"SellerPass123!\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            }
-          }
-        },
-        {
-          "name": "1.7 Удалить временного пользователя",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200/204\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
+            },
             "url": {
-              "raw": "{{baseUrl}}/api/users/{{tmpUserId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "{{tmpUserId}}"]
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "1.8 Удалённый пользователь недоступен",
+          "name": "Register Buyer",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 404\", function () { pm.expect(pm.response.code).to.be.oneOf([404]); });"
+                  "pm.test(\"Статус 201 Created\", () => pm.response.to.have.status(201));"
                 ]
               }
             }
           ],
           "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"buyer\",\r\n  \"email\": \"buyer@mail.ru\",\r\n  \"password\": \"BuyerPass123!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200 OK\", () => pm.response.to.have.status(200));\r\npm.test(\"Роль USER\", () => pm.expect(pm.response.json().role).to.eql(\"USER\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "seller",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "SellerPass123!",
+                  "type": "string"
+                }
+              ]
+            },
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users/{{tmpUserId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "{{tmpUserId}}"]
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
             }
-          }
+          },
+          "response": []
+        },
+        {
+          "name": "Регистрация со слабым паролем",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\": \"testweak\", \"email\": \"w@mail.ru\", \"password\": \"123\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Регистрация дубликата (409 Conflict)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"username\": \"seller\",\r\n  \"email\": \"seller2@mail.ru\",\r\n  \"password\": \"SellerPass123!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Auth - Bad Password (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401 Unauthorized\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "seller",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "WrongPassword999",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "2. Предметы (CRUD)",
+      "name": "1. users",
       "item": [
         {
-          "name": "2.1 Создать предмет (владелец seller)",
+          "name": "POST /api/users (id=1)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('itemId', j.id); } catch (e) {}"
+                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
+                  ""
                 ]
               }
             }
@@ -279,115 +313,38 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/api/collectible-items",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "collectible-items"]
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Золотая монета 1899\",\n  \"description\": \"Николай II, оригинал\",\n  \"ownerId\": {{sellerId}},\n  \"condition\": \"Идеальное\"\n}",
+              "raw": "{\n  \"username\": \"owner\",\n  \"email\": \"owner@mail.ru\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            }
-          }
-        },
-        {
-          "name": "2.2 Список предметов",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/collectible-items",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "collectible-items"]
-            }
-          }
-        },
-        {
-          "name": "2.3 Предмет по id",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/collectible-items/{{itemId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "collectible-items", "{{itemId}}"]
-            }
-          }
-        },
-        {
-          "name": "2.4 Обновить предмет",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/collectible-items/{{itemId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "collectible-items", "{{itemId}}"]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Золотая монета 1899\",\n  \"description\": \"Николай II, оригинал\",\n  \"ownerId\": {{sellerId}},\n  \"condition\": \"Отличное\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "2.5 Создать временный предмет",
+          "name": "POST /api/users (id=2)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('tmpItemId', j.id); } catch (e) {}"
+                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
+                  ""
                 ]
               }
             }
@@ -400,31 +357,263 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/api/collectible-items",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "collectible-items"]
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Временный предмет\",\n  \"description\": \"для удаления\",\n  \"ownerId\": {{sellerId}},\n  \"condition\": \"Среднее\"\n}",
+              "raw": "{\n  \"username\": \"buyer\",\n  \"email\": \"buyer@mail.ru\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "2.6 Удалить временный предмет",
+          "name": "POST /api/users (id=3)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/204\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });"
+                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"temp\",\n  \"email\": \"temp@mail.ru\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/users без username -> 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () { pm.response.to.have.status(400); });",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"x@mail.ru\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"3 пользователя\", function () { pm.expect(pm.response.json().length).to.eql(3); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/users/1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/users/999 -> 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 404\", function () { pm.response.to.have.status(404); });",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/users/1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"email изменился\", function () { pm.expect(pm.response.json().email).to.eql(\"new@mail.ru\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"new@mail.ru\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /api/users/3",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 204\", function () { pm.response.to.have.status(204); });",
+                  ""
                 ]
               }
             }
@@ -433,50 +622,34 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/collectible-items/{{tmpItemId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "collectible-items", "{{tmpItemId}}"]
+              "raw": "{{baseUrl}}/api/users/3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "3"
+              ]
             }
-          }
-        },
-        {
-          "name": "2.7 Удалённый предмет недоступен",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 404\", function () { pm.expect(pm.response.code).to.be.oneOf([404]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/collectible-items/{{tmpItemId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "collectible-items", "{{tmpItemId}}"]
-            }
-          }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "3. Лоты (CRUD)",
+      "name": "2. collectible-items",
       "item": [
         {
-          "name": "3.1 Создать лот",
+          "name": "POST /api/collectible-items (id=1)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('lotId', j.id); } catch (e) {}"
+                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"owner вложенный объект\", function () { pm.expect(pm.response.json().owner.id).to.eql(1); });"
                 ]
               }
             }
@@ -489,153 +662,38 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-lots",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-lots"]
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"itemId\": {{itemId}},\n  \"startPrice\": 1000.0,\n  \"bidStep\": 100.0,\n  \"startTime\": \"2026-10-01T00:00:00Z\",\n  \"endTime\": \"2026-12-31T23:59:59Z\"\n}",
+              "raw": "{\n  \"name\": \"Старинная монета\",\n  \"description\": \"1913 год\",\n  \"ownerId\": 1,\n  \"condition\": \"отличное\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            }
-          }
-        },
-        {
-          "name": "3.2 Список лотов",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-lots",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-lots"]
-            }
-          }
-        },
-        {
-          "name": "3.3 Лот по id",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-lots/{{lotId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-lots", "{{lotId}}"]
-            }
-          }
-        },
-        {
-          "name": "3.4 Обновить лот (срок окончания)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-lots/{{lotId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-lots", "{{lotId}}"]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"itemId\": {{itemId}},\n  \"startPrice\": 1000.0,\n  \"bidStep\": 100.0,\n  \"startTime\": \"2026-10-01T00:00:00Z\",\n  \"endTime\": \"2027-01-31T23:59:59Z\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "3.5 Создать временный предмет",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('tmpItemId', j.id); } catch (e) {}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
             "url": {
               "raw": "{{baseUrl}}/api/collectible-items",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "collectible-items"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Предмет для временного лота\",\n  \"description\": \"для удаления\",\n  \"ownerId\": {{sellerId}},\n  \"condition\": \"Среднее\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "collectible-items"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "3.6 Создать временный лот",
+          "name": "POST /api/collectible-items (id=2)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('tmpLotId', j.id); } catch (e) {}"
+                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
+                  ""
                 ]
               }
             }
@@ -648,54 +706,82 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-lots",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-lots"]
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"itemId\": {{tmpItemId}},\n  \"startPrice\": 100.0,\n  \"bidStep\": 10.0,\n  \"startTime\": \"2026-10-01T00:00:00Z\",\n  \"endTime\": \"2026-12-31T23:59:59Z\"\n}",
+              "raw": "{\n  \"name\": \"Марка\",\n  \"description\": \"1920 год\",\n  \"ownerId\": 1,\n  \"condition\": \"хорошее\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/collectible-items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "collectible-items"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "3.7 Удалить временный лот",
+          "name": "POST /api/collectible-items владелец не существует -> 400",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/204\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });"
+                  "pm.test(\"Статус 400\", function () { pm.response.to.have.status(400); });",
+                  ""
                 ]
               }
             }
           ],
           "request": {
-            "method": "DELETE",
-            "header": [],
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"X\",\n  \"ownerId\": 999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
-              "raw": "{{baseUrl}}/api/auction-lots/{{tmpLotId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-lots", "{{tmpLotId}}"]
+              "raw": "{{baseUrl}}/api/collectible-items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "collectible-items"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "3.8 Удалённый лот недоступен",
+          "name": "GET /api/collectible-items",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 404\", function () { pm.expect(pm.response.code).to.be.oneOf([404]); });"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
                 ]
               }
             }
@@ -704,95 +790,384 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/auction-lots/{{tmpLotId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-lots", "{{tmpLotId}}"]
+              "raw": "{{baseUrl}}/api/collectible-items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "collectible-items"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "3.9 Удалить временный предмет",
+          "name": "GET /api/collectible-items/1",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/204\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
                 ]
               }
             }
           ],
           "request": {
-            "method": "DELETE",
+            "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/collectible-items/{{tmpItemId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "collectible-items", "{{tmpItemId}}"]
+              "raw": "{{baseUrl}}/api/collectible-items/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "collectible-items",
+                "1"
+              ]
             }
-          }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH /api/collectible-items/1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"condition\": \"идеальное\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/collectible-items/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "collectible-items",
+                "1"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "4. Основной сценарий торгов и ставки/сделки",
+      "name": "3. auction-lots",
       "item": [
         {
-          "name": "4.1 Бизнес-операция 1: активировать лот",
+          "name": "POST /api/auction-lots (id=1)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
+                  ""
                 ]
               }
             }
           ],
           "request": {
             "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemId\": 1,\n  \"startPrice\": 1000,\n  \"bidStep\": 100,\n  \"startTime\": \"2026-10-01T00:00:00Z\",\n  \"endTime\": \"2026-12-31T00:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auction-lots",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-lots"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/auction-lots (id=2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemId\": 2,\n  \"startPrice\": 500,\n  \"bidStep\": 50,\n  \"startTime\": \"2026-10-01T00:00:00Z\",\n  \"endTime\": \"2026-12-31T00:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auction-lots",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-lots"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /api/auction-lots повторный лот на предмет 1 -> 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 409\", function () { pm.response.to.have.status(409); });",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemId\": 1,\n  \"startPrice\": 1000,\n  \"bidStep\": 100,\n  \"startTime\": \"2026-10-01T00:00:00Z\",\n  \"endTime\": \"2026-12-31T00:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auction-lots",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-lots"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/auction-lots",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/activate",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lotId}}", "activate"]
+              "raw": "{{baseUrl}}/api/auction-lots",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-lots"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.2 Повторная активация запрещена",
+          "name": "GET /api/auction-lots/1",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 400/409/422\", function () { pm.expect(pm.response.code).to.be.oneOf([400, 409, 422]); });"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/activate",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lotId}}", "activate"]
+              "raw": "{{baseUrl}}/api/auction-lots/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-lots",
+                "1"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.3 Ставка владельца на свой лот запрещена",
+          "name": "PATCH /api/auction-lots/1",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 400/409/422\", function () { pm.expect(pm.response.code).to.be.oneOf([400, 409, 422]); });"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"endTime\": \"2027-01-31T00:00:00Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auction-lots/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-lots",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /api/auction-lots/2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 204\", function () { pm.response.to.have.status(204); });",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auction-lots/2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-lots",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. bids",
+      "item": [
+        {
+          "name": "POST /api/bids 1000 (id=1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"время поставил сервер\", function () { pm.expect(pm.response.json().createdAt).to.be.a(\"string\"); });",
+                  "pm.test(\"user вложенный объект\", function () { pm.expect(pm.response.json().user.id).to.eql(2); });"
                 ]
               }
             }
@@ -805,31 +1180,38 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/bids",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lotId}}", "bids"]
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": {{sellerId}},\n  \"amount\": 1200.0\n}",
+              "raw": "{\n  \"lotId\": 1,\n  \"userId\": 2,\n  \"amount\": 1000\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.4 Ставка ниже стартовой цены запрещена",
+          "name": "POST /api/bids 1050 (мало) -> 400",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 400/409/422\", function () { pm.expect(pm.response.code).to.be.oneOf([400, 409, 422]); });"
+                  "pm.test(\"Статус 400\", function () { pm.response.to.have.status(400); });",
+                  ""
                 ]
               }
             }
@@ -842,32 +1224,38 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/bids",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lotId}}", "bids"]
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": {{buyerId}},\n  \"amount\": 500.0\n}",
+              "raw": "{\n  \"lotId\": 1,\n  \"userId\": 2,\n  \"amount\": 1050\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.5 Бизнес-операция 2: ставка покупателя 1200",
+          "name": "POST /api/bids владелец на свой лот -> 409",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('bidId', j.id); } catch (e) {}"
+                  "pm.test(\"Статус 409\", function () { pm.response.to.have.status(409); });",
+                  ""
                 ]
               }
             }
@@ -880,31 +1268,38 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/bids",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lotId}}", "bids"]
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": {{buyerId}},\n  \"amount\": 1200.0\n}",
+              "raw": "{\n  \"lotId\": 1,\n  \"userId\": 1,\n  \"amount\": 5000\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.6 Ставка меньше текущей + шаг запрещена",
+          "name": "POST /api/bids 1100 (id=2)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 400/409/422\", function () { pm.expect(pm.response.code).to.be.oneOf([400, 409, 422]); });"
+                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
+                  ""
                 ]
               }
             }
@@ -917,69 +1312,38 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/bids",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lotId}}", "bids"]
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": {{buyerId}},\n  \"amount\": 1250.0\n}",
+              "raw": "{\n  \"lotId\": 1,\n  \"userId\": 2,\n  \"amount\": 1100\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.7 Вторая ставка 1400 (перебивает первую)",
+          "name": "GET /api/bids",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('bid2Id', j.id); } catch (e) {}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/bids",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lotId}}", "bids"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"userId\": {{buyerId}},\n  \"amount\": 1400.0\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "4.8 Список ставок",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
                 ]
               }
             }
@@ -989,20 +1353,27 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/bids",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "bids"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.9 Ставка по id",
+          "name": "GET /api/bids/1",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
                 ]
               }
             }
@@ -1011,81 +1382,110 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/bids/{{bidId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "bids", "{{bidId}}"]
+              "raw": "{{baseUrl}}/api/bids/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids",
+                "1"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.10 Обновить ставку (повысить до 1500)",
+          "name": "PATCH /api/bids/2",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
                 ]
               }
             }
           ],
           "request": {
-            "method": "PUT",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/api/bids/{{bid2Id}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "bids", "{{bid2Id}}"]
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"lotId\": {{lotId}},\n  \"userId\": {{buyerId}},\n  \"amount\": 1500.0\n}",
+              "raw": "{\n  \"amount\": 1200\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bids/2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids",
+                "2"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.11 Бизнес-операция 3: закрыть торги, создать сделку",
+          "name": "DELETE /api/bids/2",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                  "pm.test(\"Статус 204\", function () { pm.response.to.have.status(204); });",
+                  ""
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
+            "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/close",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lotId}}", "close"]
+              "raw": "{{baseUrl}}/api/bids/2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids",
+                "2"
+              ]
             }
-          }
-        },
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. auction-deals",
+      "item": [
         {
-          "name": "4.12 Ставка на закрытый лот запрещена",
+          "name": "POST /api/auction-deals (id=1)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 400/409/422\", function () { pm.expect(pm.response.code).to.be.oneOf([400, 409, 422]); });"
+                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"сумма из ставки\", function () { pm.expect(Number(pm.response.json().amount)).to.eql(1000); });"
                 ]
               }
             }
@@ -1098,60 +1498,82 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/bids",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lotId}}", "bids"]
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": {{buyerId}},\n  \"amount\": 2000.0\n}",
+              "raw": "{\n  \"lotId\": 1,\n  \"bidId\": 1\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auction-deals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-deals"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.13 Повторное закрытие запрещено",
+          "name": "POST /api/auction-deals повторная сделка по лоту -> 409",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 400/409/422\", function () { pm.expect(pm.response.code).to.be.oneOf([400, 409, 422]); });"
+                  "pm.test(\"Статус 409\", function () { pm.response.to.have.status(409); });",
+                  ""
                 ]
               }
             }
           ],
           "request": {
             "method": "POST",
-            "header": [],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lotId\": 1,\n  \"bidId\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
             "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/close",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lotId}}", "close"]
+              "raw": "{{baseUrl}}/api/auction-deals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-deals"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.14 Список сделок",
+          "name": "GET /api/auction-deals",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
-                  "try {",
-                  "  const j = pm.response.json();",
-                  "  const currentLotId = String(pm.collectionVariables.get('lotId'));",
-                  "  const deal = j.find(d => String(d.lotId || (d.lot && d.lot.id)) === currentLotId);",
-                  "  if (deal) pm.collectionVariables.set('dealId', deal.id);",
-                  "} catch (e) {}"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
                 ]
               }
             }
@@ -1161,20 +1583,27 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/auction-deals",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-deals"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-deals"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.15 Сделка по id",
+          "name": "GET /api/auction-deals/1",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
                 ]
               }
             }
@@ -1183,298 +1612,74 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/auction-deals/{{dealId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-deals", "{{dealId}}"]
+              "raw": "{{baseUrl}}/api/auction-deals/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-deals",
+                "1"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "4.16 Обновить статус передачи сделки",
+          "name": "PATCH /api/auction-deals/1",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  ""
                 ]
               }
             }
           ],
           "request": {
-            "method": "PUT",
+            "method": "PATCH",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-deals/{{dealId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-deals", "{{dealId}}"]
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"transferStatus\": \"PENDING\"\n}",
+              "raw": "{\n  \"transferStatus\": \"TRANSFERRED\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            }
-          }
-        },
-        {
-          "name": "4.17 Бизнес-операция 4: исполнить сделку",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/deals/{{dealId}}/complete",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "deals", "{{dealId}}", "complete"]
-            }
-          }
-        },
-        {
-          "name": "4.18 Повторное исполнение запрещено",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 400/409/422\", function () { pm.expect(pm.response.code).to.be.oneOf([400, 409, 422]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/deals/{{dealId}}/complete",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "deals", "{{dealId}}", "complete"]
-            }
-          }
-        },
-        {
-          "name": "4.19 Владелец предмета теперь покупатель",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
-                  "pm.test(\"Владелец предмета сменился на покупателя (buyerId)\", function () {",
-                  "  const j = pm.response.json();",
-                  "  const buyerId = String(pm.collectionVariables.get('buyerId'));",
-                  "  const actualOwnerId = String(j.owner ? j.owner.id : j.ownerId);",
-                  "  pm.expect(actualOwnerId).to.eql(buyerId);",
-                  "});"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/collectible-items/{{itemId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "collectible-items", "{{itemId}}"]
-            }
-          }
-        },
-        {
-          "name": "4.20 Отмена лота с исполненной сделкой запрещена",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 400/409/422\", function () { pm.expect(pm.response.code).to.be.oneOf([400, 409, 422]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/cancel",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lotId}}", "cancel"]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "5. Отмена лота и удаление ставки",
-      "item": [
-        {
-          "name": "5.1 Создать второй предмет",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('item2Id', j.id); } catch (e) {}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/collectible-items",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "collectible-items"]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Картина 19 века\",\n  \"description\": \"Холст, масло\",\n  \"ownerId\": {{sellerId}},\n  \"condition\": \"Хорошее\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "5.2 Создать второй лот",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('lot2Id', j.id); } catch (e) {}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
             "url": {
-              "raw": "{{baseUrl}}/api/auction-lots",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-lots"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"itemId\": {{item2Id}},\n  \"startPrice\": 5000.0,\n  \"bidStep\": 500.0,\n  \"startTime\": \"2026-10-01T00:00:00Z\",\n  \"endTime\": \"2026-12-31T23:59:59Z\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{{baseUrl}}/api/auction-deals/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-deals",
+                "1"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "5.3 Активировать второй лот",
+          "name": "DELETE /api/auction-deals/1",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lot2Id}}/activate",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lot2Id}}", "activate"]
-            }
-          }
-        },
-        {
-          "name": "5.4 Ставка на второй лот",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('bid3Id', j.id); } catch (e) {}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lot2Id}}/bids",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lot2Id}}", "bids"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"userId\": {{buyerId}},\n  \"amount\": 5000.0\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "5.5 Удалить ставку",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200/204\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });"
+                  "pm.test(\"Статус 204\", function () { pm.response.to.have.status(204); });",
+                  ""
                 ]
               }
             }
@@ -1483,44 +1688,29 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/bids/{{bid3Id}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "bids", "{{bid3Id}}"]
+              "raw": "{{baseUrl}}/api/auction-deals/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-deals",
+                "1"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "5.6 Бизнес-операция 5: отменить лот",
+          "name": "POST /api/auction-deals (id=2, заново для проверки каскада)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lot2Id}}/cancel",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lot2Id}}", "cancel"]
-            }
-          }
-        },
-        {
-          "name": "5.7 Ставка на отменённый лот запрещена",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 400/409/422\", function () { pm.expect(pm.response.code).to.be.oneOf([400, 409, 422]); });"
+                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
+                  ""
                 ]
               }
             }
@@ -1533,201 +1723,195 @@
                 "value": "application/json"
               }
             ],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lot2Id}}/bids",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lot2Id}}", "bids"]
-            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": {{buyerId}},\n  \"amount\": 5000.0\n}",
+              "raw": "{\n  \"lotId\": 1,\n  \"bidId\": 1\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auction-deals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-deals"
+              ]
             }
-          }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "6. Удаление сделки",
+      "name": "6. каскадное удаление",
       "item": [
         {
-          "name": "6.1 Создать третий предмет",
+          "name": "DELETE /api/collectible-items/2",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('item3Id', j.id); } catch (e) {}"
+                  "pm.test(\"Статус 204\", function () { pm.response.to.have.status(204); });",
+                  ""
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/collectible-items/2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "collectible-items",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /api/users/1 (владелец)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 204\", function () { pm.response.to.have.status(204); });",
+                  ""
+                ]
               }
-            ],
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/collectible-items -> []",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"пусто\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/collectible-items",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "collectible-items"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Марка 1856\",\n  \"description\": \"Редкая марка\",\n  \"ownerId\": {{sellerId}},\n  \"condition\": \"Хорошее\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "collectible-items"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "6.2 Создать третий лот",
+          "name": "GET /api/auction-lots -> []",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });",
-                  "try { const j = pm.response.json(); pm.collectionVariables.set('lot3Id', j.id); } catch (e) {}"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"пусто\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            "method": "GET",
+            "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/auction-lots",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-lots"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"itemId\": {{item3Id}},\n  \"startPrice\": 300.0,\n  \"bidStep\": 50.0,\n  \"startTime\": \"2026-10-01T00:00:00Z\",\n  \"endTime\": \"2026-12-31T23:59:59Z\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-lots"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "6.3 Активировать третий лот",
+          "name": "GET /api/bids -> []",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"пусто\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
                 ]
               }
             }
           ],
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lot3Id}}/activate",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lot3Id}}", "activate"]
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "6.4 Ставка на третий лот",
+          "name": "GET /api/auction-deals -> []",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Код ответа: 200/201\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 201]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lot3Id}}/bids",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lot3Id}}", "bids"]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"userId\": {{buyerId}},\n  \"amount\": 300.0\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "6.5 Закрыть третий лот",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/business/lots/{{lot3Id}}/close",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "business", "lots", "{{lot3Id}}", "close"]
-            }
-          }
-        },
-        {
-          "name": "6.6 Найти сделку третьего лота",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });",
-                  "try {",
-                  "  const j = pm.response.json();",
-                  "  const currentLotId = String(pm.collectionVariables.get('lot3Id'));",
-                  "  const deal = j.find(d => String(d.lotId || (d.lot && d.lot.id)) === currentLotId);",
-                  "  if (deal) pm.collectionVariables.set('deal3Id', deal.id);",
-                  "} catch (e) {}"
+                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"пусто\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
                 ]
               }
             }
@@ -1737,64 +1921,44 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/auction-deals",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-deals"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-deals"
+              ]
             }
-          }
-        },
-        {
-          "name": "6.7 Удалить сделку",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 200/204\", function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-deals/{{deal3Id}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-deals", "{{deal3Id}}"]
-            }
-          }
-        },
-        {
-          "name": "6.8 Удалённая сделка недоступна",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Код ответа: 404\", function () { pm.expect(pm.response.code).to.be.oneOf([404]); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-deals/{{deal3Id}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "auction-deals", "{{deal3Id}}"]
-            }
-          }
+          },
+          "response": []
         }
       ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "if (!['GET', 'HEAD', 'OPTIONS'].includes(pm.request.method)) {\r",
+          "    const token = pm.collectionVariables.get('csrf');\r",
+          "    if (token) {\r",
+          "        pm.request.headers.upsert({ key: 'X-XSRF-TOKEN', value: token });\r",
+          "    }\r",
+          "}"
+        ],
+        "type": "text/javascript"
+      }
     }
   ],
   "variable": [
     {
       "key": "baseUrl",
       "value": "http://localhost:8080"
+    },
+    {
+      "key": "csrf",
+      "value": ""
     }
   ]
 }

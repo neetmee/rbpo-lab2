@@ -1,54 +1,88 @@
 package com.rbpo.rbpo_lab2.controller;
 
+import com.rbpo.rbpo_lab2.dto.AuctionDealDto;
+import com.rbpo.rbpo_lab2.dto.AuctionLotDto;
+import com.rbpo.rbpo_lab2.dto.BidDto;
+import com.rbpo.rbpo_lab2.dto.UserDto;
 import com.rbpo.rbpo_lab2.model.AuctionDeal;
 import com.rbpo.rbpo_lab2.model.AuctionLot;
 import com.rbpo.rbpo_lab2.model.Bid;
+import com.rbpo.rbpo_lab2.model.User;
+import com.rbpo.rbpo_lab2.security.CurrentUser;
 import com.rbpo.rbpo_lab2.service.AuctionBusinessService;
+import com.rbpo.rbpo_lab2.service.UserService;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/business")
 public class AuctionBusinessController {
 
     private final AuctionBusinessService businessService;
+    private final UserService userService;
+    private final CurrentUser currentUser;
 
-    public AuctionBusinessController(AuctionBusinessService businessService) {
+    public AuctionBusinessController(AuctionBusinessService businessService,
+                                     UserService userService,
+                                     CurrentUser currentUser) {
         this.businessService = businessService;
+        this.userService = userService;
+        this.currentUser = currentUser;
     }
 
+    public record PlaceBidRequest(@NotNull @Positive BigDecimal amount) {}
+
     @PostMapping("/lots/{lotId}/activate")
-    public ResponseEntity<AuctionLot> activateLot(@PathVariable Long lotId) {
+    @PreAuthorize("hasRole('ADMIN') or @authz.isLotSeller(#lotId, authentication)")
+    public ResponseEntity<AuctionLotDto.Response> activateLot(@PathVariable Long lotId) {
         AuctionLot lot = businessService.activateLot(lotId);
-        return ResponseEntity.ok(lot);
+        return ResponseEntity.ok(toLotResponse(lot));
     }
 
     @PostMapping("/lots/{lotId}/bids")
-    public ResponseEntity<Bid> placeBid(@PathVariable Long lotId, @RequestBody Map<String, Object> payload) {
-        Long userId = Long.valueOf(payload.get("userId").toString());
-        BigDecimal amount = new BigDecimal(payload.get("amount").toString());
-        Bid bid = businessService.placeCompetitiveBid(lotId, userId, amount);
-        return ResponseEntity.ok(bid);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<BidDto.Response> placeBid(@PathVariable Long lotId,
+                                                    @RequestBody PlaceBidRequest payload) {
+        Bid bid = businessService.placeCompetitiveBid(lotId, currentUser.id(), payload.amount());
+        return ResponseEntity.ok(toBidResponse(bid));
     }
 
     @PostMapping("/lots/{lotId}/close")
-    public ResponseEntity<AuctionDeal> closeAuction(@PathVariable Long lotId) {
+    @PreAuthorize("hasRole('ADMIN') or @authz.isLotSeller(#lotId, authentication)")
+    public ResponseEntity<AuctionDealDto.Response> closeAuction(@PathVariable Long lotId) {
         AuctionDeal deal = businessService.closeAuctionLot(lotId);
-        return ResponseEntity.ok(deal);
+        return ResponseEntity.ok(toDealResponse(deal));
     }
 
     @PostMapping("/deals/{dealId}/complete")
-    public ResponseEntity<AuctionDeal> completeDeal(@PathVariable Long dealId) {
+    @PreAuthorize("hasRole('ADMIN') or @authz.isDealSeller(#dealId, authentication)")
+    public ResponseEntity<AuctionDealDto.Response> completeDeal(@PathVariable Long dealId) {
         AuctionDeal deal = businessService.completeDealAndTransferOwnership(dealId);
-        return ResponseEntity.ok(deal);
+        return ResponseEntity.ok(toDealResponse(deal));
     }
 
     @PostMapping("/lots/{lotId}/cancel")
-    public ResponseEntity<AuctionLot> cancelLot(@PathVariable Long lotId) {
+    @PreAuthorize("hasRole('ADMIN') or @authz.isLotSeller(#lotId, authentication)")
+    public ResponseEntity<AuctionLotDto.Response> cancelLot(@PathVariable Long lotId) {
         AuctionLot lot = businessService.cancelLot(lotId);
-        return ResponseEntity.ok(lot);
+        return ResponseEntity.ok(toLotResponse(lot));
+    }
+
+    private AuctionLotDto.Response toLotResponse(AuctionLot l) {
+        return new AuctionLotDto.Response(l.id(), l.itemId(), l.startPrice(), l.bidStep(), l.startTime(), l.endTime(), l.status());
+    }
+
+    private AuctionDealDto.Response toDealResponse(AuctionDeal d) {
+        return new AuctionDealDto.Response(d.id(), d.lotId(), d.bidId(), d.amount(), d.transferStatus());
+    }
+
+    private BidDto.Response toBidResponse(Bid b) {
+        User u = userService.getById(b.userId());
+        return new BidDto.Response(b.id(), b.lotId(), new UserDto.Response(u.getId(), u.getUsername(), u.getEmail()), b.amount(), b.createdAt());
     }
 }

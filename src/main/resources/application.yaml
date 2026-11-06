@@ -10,3 +10,12 @@ spring:
       ddl-auto: update
     open-in-view: false
     show-sql: true
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+
+app:
+  admin:
+    password: ${ADMIN_PASSWORD:AdminPass123!}
