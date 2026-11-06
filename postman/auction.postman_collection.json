@@ -714,9 +714,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Ensure itemId is cast as integer",
+                  "const now = new Date();",
+                  "const startTime = new Date(now.getTime() - 60000).toISOString();",
+                  "const endTime = new Date(now.getTime() + 30 * 86400000).toISOString();",
+                  "",
                   "const body = JSON.parse(pm.request.body.raw);",
                   "body.itemId = parseInt(pm.collectionVariables.get('itemId'));",
+                  "body.startTime = startTime;",
+                  "body.endTime = endTime;",
                   "pm.request.body.raw = JSON.stringify(body);"
                 ]
               }
@@ -840,6 +845,53 @@
       "name": "4. Бизнес-сценарий (лаба 3)",
       "item": [
         {
+          "name": "1.1 Негативный: Buyer пытается активировать чужой лот -> 403 Forbidden",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/activate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "business",
+                "lots",
+                "{{lotId}}",
+                "activate"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{buyerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{buyerPass}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "1. Активация лота (Seller)",
           "request": {
             "method": "POST",
@@ -882,6 +934,118 @@
                 "exec": [
                   "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
                   "pm.test('Lot status is ACTIVE', () => pm.expect(pm.response.json().status).to.eql('ACTIVE'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.1 Негативный: Продавец ставит на свой же лот -> 409/400 Conflict",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "business",
+                "lots",
+                "{{lotId}}",
+                "bids"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{sellerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{sellerPass}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 5000.0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Response is 400 or 409', () => pm.expect([400, 409]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Негативный: Ставка ниже минимального шага -> 400 Bad Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "business",
+                "lots",
+                "{{lotId}}",
+                "bids"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{buyerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{buyerPass}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10.0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', () => pm.response.to.have.status(400));"
                 ]
               }
             }

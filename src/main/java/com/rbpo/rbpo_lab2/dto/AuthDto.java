@@ -1,30 +1,27 @@
 package com.rbpo.rbpo_lab2.dto;
 
-import com.rbpo.rbpo_lab2.model.AccountStatus;
-import com.rbpo.rbpo_lab2.model.Role;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class AuthDto {
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record RegisterRequest(
-            @NotBlank(message = "Логин обязателен")
-            @Size(min = 3, max = 50, message = "Логин должен быть от 3 до 50 символов")
+            @NotBlank(message = "Username обязателен")
+            @Pattern(regexp = "^[A-Za-z0-9_.-]{3,50}$", message = "Username должен содержать от 3 до 50 символов без спецсимволов")
             String username,
 
+            @NotBlank(message = "Email обязателен")
             @Email(message = "Некорректный формат email")
             String email,
 
-            @NotBlank(message = "Пароль обязателен")
+            @NotBlank(message = "Password обязателен")
+            @Size(max = 72, message = "Пароль не должен превышать 72 символа")
             String password
     ) {}
 
-    public record MeResponse(
-            Long id,
-            String username,
-            String email,
-            Role role,
-            AccountStatus status
-    ) {}
+    public record CsrfResponse(String token, String headerName) {}
 }

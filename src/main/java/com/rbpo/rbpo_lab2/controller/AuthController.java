@@ -1,18 +1,19 @@
 package com.rbpo.rbpo_lab2.controller;
 
 import com.rbpo.rbpo_lab2.dto.AuthDto;
+import com.rbpo.rbpo_lab2.dto.UserDto;
+import com.rbpo.rbpo_lab2.exception.ApiException;
 import com.rbpo.rbpo_lab2.model.AccountStatus;
 import com.rbpo.rbpo_lab2.model.Role;
 import com.rbpo.rbpo_lab2.model.User;
 import com.rbpo.rbpo_lab2.repository.UserRepository;
-import com.rbpo.rbpo_lab2.security.CurrentUser;
 import com.rbpo.rbpo_lab2.security.PasswordPolicy;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -21,46 +22,45 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordPolicy passwordPolicy;
-    private final CurrentUser currentUser;
+
+    // Рекорд для ответа метода /me
+    public record MeResponse(Long id, String username, String email, Role role, AccountStatus status) {}
 
     public AuthController(UserRepository userRepository,
                           PasswordEncoder passwordEncoder,
-                          PasswordPolicy passwordPolicy,
-                          CurrentUser currentUser) {
+                          PasswordPolicy passwordPolicy) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordPolicy = passwordPolicy;
-        this.currentUser = currentUser;
     }
 
     @GetMapping("/csrf")
-    public CsrfToken getCsrfToken(CsrfToken token) {
-        return token;
+    public AuthDto.CsrfResponse csrf(CsrfToken token) {
+        return new AuthDto.CsrfResponse(token.getToken(), token.getHeaderName());
     }
 
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public AuthDto.MeResponse register(@Valid @RequestBody AuthDto.RegisterRequest req) {
-        if (userRepository.findByUsername(req.username()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Имя пользователя уже занято");
+    public UserDto.Response register(@Valid @RequestBody AuthDto.RegisterRequest req) {
+        if (userRepository.existsByUsername(req.username())) {
+            throw ApiException.conflict("Имя пользователя уже занято");
         }
-
+        if (userRepository.existsByEmail(req.email())) {
+            throw ApiException.conflict("Email уже используется");
+        }
         passwordPolicy.validate(req.password(), req.username());
 
-        User user = new User();
-        user.setUsername(req.username());
-        user.setEmail(req.email());
-        user.setPasswordHash(passwordEncoder.encode(req.password()));
-        user.setRole(Role.USER);
-        user.setStatus(AccountStatus.ACTIVE);
-
+        String hash = passwordEncoder.encode(req.password());
+        User user = new User(null, req.username(), req.email(), hash, Role.USER, AccountStatus.ACTIVE);
         User saved = userRepository.save(user);
-        return new AuthDto.MeResponse(saved.getId(), saved.getUsername(), saved.getEmail(), saved.getRole(), saved.getStatus());
+
+        return new UserDto.Response(saved.getId(), saved.getUsername(), saved.getEmail(), saved.getRole(), saved.getStatus());
     }
 
     @GetMapping("/me")
-    public AuthDto.MeResponse me() {
-        User u = currentUser.get();
-        return new AuthDto.MeResponse(u.getId(), u.getUsername(), u.getEmail(), u.getRole(), u.getStatus());
+    public MeResponse me(Authentication auth) {
+        User user = userRepository.findByUsername(auth.getName())
+                .orElseThrow(() -> ApiException.notFound("Пользователь", 0L));
+        return new MeResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole(), user.getStatus());
     }
 }
