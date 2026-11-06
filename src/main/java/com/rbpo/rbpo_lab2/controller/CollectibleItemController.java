@@ -52,7 +52,9 @@ public class CollectibleItemController {
     @PreAuthorize("hasRole('ADMIN') or @authz.isItemOwner(#id, authentication)")
     public CollectibleItemDto.Response update(@PathVariable Long id,
                                               @RequestBody CollectibleItemDto.UpdateRequest req) {
-        Long ownerId = currentUser.isAdmin() && req.ownerId() != null ? req.ownerId() : currentUser.id();
+        Long ownerId = currentUser.isAdmin() && req.ownerId() != null
+                ? req.ownerId()
+                : service.getById(id).ownerId();
         return toResponse(service.update(id, req.name(), req.description(), ownerId, req.condition()));
     }
 
@@ -65,7 +67,12 @@ public class CollectibleItemController {
 
     private CollectibleItemDto.Response toResponse(CollectibleItem i) {
         User owner = userService.getById(i.ownerId());
-        return new CollectibleItemDto.Response(i.id(), i.name(), i.description(),
-                new UserDto.Response(owner.getId(), owner.getUsername(), owner.getEmail()), i.condition());
+        return new CollectibleItemDto.Response(
+                i.id(),
+                i.name(),
+                i.description(),
+                new UserDto.Public(owner.getId(), owner.getUsername()),
+                i.condition()
+        );
     }
 }

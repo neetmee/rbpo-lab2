@@ -1,40 +1,44 @@
 package com.rbpo.rbpo_lab2.service;
 
+import java.util.List;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 import com.rbpo.rbpo_lab2.exception.ApiException;
-import com.rbpo.rbpo_lab2.model.CollectibleItem;
+import com.rbpo.rbpo_lab2.model.AccountStatus;
+import com.rbpo.rbpo_lab2.model.Role;
 import com.rbpo.rbpo_lab2.model.User;
 import com.rbpo.rbpo_lab2.repository.UserRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import com.rbpo.rbpo_lab2.security.PasswordPolicy;
 
 @Service
-@Transactional
 public class UserService {
 
     private final UserRepository users;
-    private final CollectibleItemService items;
-    private final BidService bids;
+    private final PasswordPolicy passwordPolicy;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository users, CollectibleItemService items, BidService bids) {
+    public UserService(UserRepository users,
+                       PasswordPolicy passwordPolicy,
+                       PasswordEncoder passwordEncoder) {
         this.users = users;
-        this.items = items;
-        this.bids = bids;
+        this.passwordPolicy = passwordPolicy;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    @Transactional(readOnly = true)
     public List<User> getAll() {
         return users.findAll();
     }
 
-    @Transactional(readOnly = true)
     public User getById(Long id) {
         return users.findById(id)
-                .orElseThrow(() -> ApiException.notFound("Пользователь", id));
+                .orElseThrow(() -> ApiException.notFound("Пользователь с id " + id + " не найден"));
     }
 
     public User create(String username, String email) {
+        return create(username, email, "DefaultPass123!", Role.USER);
+    }
+
+    public User create(String username, String email, String rawPassword, Role role) {
         requireText(username, "username");
         requireText(email, "email");
 
@@ -45,45 +49,46 @@ public class UserService {
             throw ApiException.conflict("Пользователь с таким email уже существует");
         }
 
-        return users.save(new User(username, email));
+        String passwordToHash = (rawPassword != null && !rawPassword.isBlank()) ? rawPassword : "DefaultPass123!";
+        passwordPolicy.validate(passwordToHash, username);
+        String hash = passwordEncoder.encode(passwordToHash);
+        Role userRole = role != null ? role : Role.USER;
+
+        return users.save(new User(null, username, email, hash, userRole, AccountStatus.ACTIVE));
     }
 
     public User update(Long id, String username, String email) {
-        User user = getById(id);
+        return update(id, username, email, null, null);
+    }
 
-        if (username != null) {
-            requireText(username, "username");
-            if (!username.equals(user.getUsername()) && users.existsByUsername(username)) {
-                throw ApiException.conflict("Username '" + username + "' уже занят");
-            }
-            user.setUsername(username);
+    public User update(Long id, String username, String email, Role role, AccountStatus status) {
+        User existing = getById(id);
+        String newUsername = (username != null && !username.isBlank()) ? username : existing.getUsername();
+        String newEmail = (email != null && !email.isBlank()) ? email : existing.getEmail();
+        Role newRole = role != null ? role : existing.getRole();
+        AccountStatus newStatus = status != null ? status : existing.getStatus();
+
+        if (username != null && !username.equals(existing.getUsername()) && users.existsByUsername(username)) {
+            throw ApiException.conflict("Пользователь с username '" + username + "' уже существует");
+        }
+        if (email != null && !email.equals(existing.getEmail()) && users.existsByEmail(email)) {
+            throw ApiException.conflict("Пользователь с таким email уже существует");
         }
 
-        if (email != null) {
-            requireText(email, "email");
-            if (!email.equals(user.getEmail()) && users.existsByEmail(email)) {
-                throw ApiException.conflict("Пользователь с таким email уже существует");
-            }
-            user.setEmail(email);
-        }
-
-        return users.save(user);
+        return users.save(new User(existing.getId(), newUsername, newEmail,
+                existing.getPassword(), newRole, newStatus));
     }
 
     public void delete(Long id) {
-        User user = getById(id);
-        // Каскадное удаление предметов (с их лотами и сделками)
-        for (CollectibleItem item : items.findByOwner(id)) {
-            items.delete(item.getId());
+        if (!users.existsById(id)) {
+            throw ApiException.notFound("Пользователь с id " + id + " не найден");
         }
-        // Удаление ставок пользователя как покупателя
-        bids.deleteByUser(id);
-        users.delete(user);
+        users.deleteById(id);
     }
 
-    private static void requireText(String value, String field) {
-        if (value == null || value.isBlank()) {
-            throw ApiException.badRequest("Поле " + field + " обязательно");
+    private void requireText(String value, String field) {
+        if (value == null || value.trim().isEmpty()) {
+            throw ApiException.badRequest("Поле '" + field + "' обязательно для заполнения");
         }
     }
 }

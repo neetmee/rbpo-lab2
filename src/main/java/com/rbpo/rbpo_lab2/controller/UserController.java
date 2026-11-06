@@ -2,10 +2,12 @@ package com.rbpo.rbpo_lab2.controller;
 
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import com.rbpo.rbpo_lab2.dto.UserDto;
 import com.rbpo.rbpo_lab2.model.User;
+import com.rbpo.rbpo_lab2.security.CurrentUser;
 import com.rbpo.rbpo_lab2.service.UserService;
 
 @RestController
@@ -13,9 +15,11 @@ import com.rbpo.rbpo_lab2.service.UserService;
 public class UserController {
 
     private final UserService service;
+    private final CurrentUser currentUser;
 
-    public UserController(UserService service) {
+    public UserController(UserService service, CurrentUser currentUser) {
         this.service = service;
+        this.currentUser = currentUser;
     }
 
     @GetMapping
@@ -34,13 +38,16 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('ADMIN')")
     public UserDto.Response create(@RequestBody UserDto.CreateRequest req) {
-        return toResponse(service.create(req.username(), req.email()));
+        return toResponse(service.create(req.username(), req.email(), req.password(), req.role()));
     }
 
     @PatchMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or #id == @currentUser.id()")
     public UserDto.Response update(@PathVariable Long id, @RequestBody UserDto.UpdateRequest req) {
-        return toResponse(service.update(id, req.username(), req.email()));
+        if ((req.role() != null || req.status() != null) && !currentUser.isAdmin()) {
+            throw new AccessDeniedException("Изменять роль или статус учётной записи разрешено только администратору");
+        }
+        return toResponse(service.update(id, req.username(), req.email(), req.role(), req.status()));
     }
 
     @DeleteMapping("/{id}")
@@ -51,6 +58,6 @@ public class UserController {
     }
 
     private static UserDto.Response toResponse(User u) {
-        return new UserDto.Response(u.getId(), u.getUsername(), u.getEmail());
+        return new UserDto.Response(u.getId(), u.getUsername(), u.getEmail(), u.getRole(), u.getStatus());
     }
 }

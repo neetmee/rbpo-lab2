@@ -1,28 +1,16 @@
 {
   "info": {
-    "_postman_id": "c5b9920f-7403-4bc2-a1ec-6d6562e1c968",
-    "name": "лаба 2 - все операции",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "59006011",
-    "_collection_link": "https://go.postman.co/collection/59006011-c5b9920f-7403-4bc2-a1ec-6d6562e1c968?source=collection_link"
+    "_postman_id": "79d6d998-b78e-4093-ab40-a8d8b9f104f7",
+    "name": "auction",
+    "description": "Полная коллекция для Лабораторной работы №4: Spring Security, RBAC, CSRF, бизнес-сценарии аукциона и негативные проверки",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
       "name": "0. Auth",
       "item": [
         {
-          "name": "GET CSRF Token",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 200 OK\", () => pm.response.to.have.status(200));\r\nconst res = pm.response.json();\r\npm.collectionVariables.set(\"csrf\", res.token);"
-                ]
-              }
-            }
-          ],
+          "name": "1. GET CSRF Token",
           "request": {
             "method": "GET",
             "header": [],
@@ -36,117 +24,120 @@
                 "auth",
                 "csrf"
               ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Register Seller",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 201 Created\", () => pm.response.to.have.status(201));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"username\": \"seller\",\r\n  \"email\": \"seller@mail.ru\",\r\n  \"password\": \"SellerPass123!\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/register",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "register"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Register Buyer",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 201 Created\", () => pm.response.to.have.status(201));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"username\": \"buyer\",\r\n  \"email\": \"buyer@mail.ru\",\r\n  \"password\": \"BuyerPass123!\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/register",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "register"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Current User",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 200 OK\", () => pm.response.to.have.status(200));\r\npm.test(\"Роль USER\", () => pm.expect(pm.response.json().role).to.eql(\"USER\"));"
-                ]
-              }
-            }
-          ],
-          "request": {
             "auth": {
-              "type": "basic",
-              "basic": [
-                {
-                  "key": "username",
-                  "value": "seller",
-                  "type": "string"
-                },
-                {
-                  "key": "password",
-                  "value": "SellerPass123!",
-                  "type": "string"
-                }
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('Has CSRF token', () => pm.expect(data.token).to.be.a('string'));",
+                  "pm.collectionVariables.set('csrf', data.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Register Seller (Динамический)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
               ]
             },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"seller_{{$timestamp}}\",\n  \"email\": \"seller_{{$timestamp}}@mail.ru\",\n  \"password\": \"{{sellerPass}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('sellerId', data.id);",
+                  "pm.collectionVariables.set('sellerUsername', data.username);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Register Buyer (Динамический)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"buyer_{{$timestamp}}\",\n  \"email\": \"buyer_{{$timestamp}}@mail.ru\",\n  \"password\": \"{{buyerPass}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('buyerId', data.id);",
+                  "pm.collectionVariables.set('buyerUsername', data.username);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Get Current User (/api/auth/me)",
+          "request": {
             "method": "GET",
             "header": [],
             "url": {
@@ -159,117 +150,43 @@
                 "auth",
                 "me"
               ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Регистрация со слабым паролем",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 400\", () => pm.response.to.have.status(400));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"username\": \"testweak\", \"email\": \"w@mail.ru\", \"password\": \"123\"}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
             },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/register",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "register"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Регистрация дубликата (409 Conflict)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 409\", () => pm.response.to.have.status(409));"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"username\": \"seller\",\r\n  \"email\": \"seller2@mail.ru\",\r\n  \"password\": \"SellerPass123!\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auth/register",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auth",
-                "register"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Auth - Bad Password (401)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 401 Unauthorized\", () => pm.response.to.have.status(401));"
-                ]
-              }
-            }
-          ],
-          "request": {
             "auth": {
               "type": "basic",
               "basic": [
                 {
                   "key": "username",
-                  "value": "seller",
+                  "value": "{{sellerUsername}}",
                   "type": "string"
                 },
                 {
                   "key": "password",
-                  "value": "WrongPassword999",
+                  "value": "{{sellerPass}}",
                   "type": "string"
                 }
               ]
-            },
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.test('Username matches seller', () => pm.expect(data.username).to.eql(pm.collectionVariables.get('sellerUsername')));",
+                  "pm.test('Role is USER', () => pm.expect(data.role).to.eql('USER'));",
+                  "pm.test('Status is ACTIVE', () => pm.expect(data.status).to.eql('ACTIVE'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Негативный: Неверный пароль (401)",
+          "request": {
             "method": "GET",
             "header": [],
             "url": {
@@ -282,205 +199,142 @@
                 "auth",
                 "me"
               ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{sellerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "WrongPass123!",
+                  "type": "string"
+                }
+              ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Негативный: Слабый пароль (400)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"weak_{{$timestamp}}\",\n  \"email\": \"weak_{{$timestamp}}@mail.ru\",\n  \"password\": \"123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Негативный: Дубликат логина (409)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{sellerUsername}}\",\n  \"email\": \"another_{{$timestamp}}@mail.ru\",\n  \"password\": \"{{sellerPass}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 409 Conflict', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
       "name": "1. users",
+      "auth": {
+        "type": "basic",
+        "basic": [
+          {
+            "key": "username",
+            "value": "{{adminUser}}",
+            "type": "string"
+          },
+          {
+            "key": "password",
+            "value": "{{adminPass}}",
+            "type": "string"
+          }
+        ]
+      },
       "item": [
         {
-          "name": "POST /api/users (id=1)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"owner\",\n  \"email\": \"owner@mail.ru\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/users",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "users"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/users (id=2)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"buyer\",\n  \"email\": \"buyer@mail.ru\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/users",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "users"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/users (id=3)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"temp\",\n  \"email\": \"temp@mail.ru\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/users",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "users"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/users без username -> 400",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 400\", function () { pm.response.to.have.status(400); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"x@mail.ru\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/users",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "users"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET /api/users",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"3 пользователя\", function () { pm.expect(pm.response.json().length).to.eql(3); });"
-                ]
-              }
-            }
-          ],
+          "name": "GET Все пользователи (Admin)",
           "request": {
             "method": "GET",
             "header": [],
@@ -495,182 +349,184 @@
               ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "GET /api/users/1",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('List contains users', () => pm.expect(pm.response.json().length).to.be.above(0));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "GET Пользователь по sellerId",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users/1",
+              "raw": "{{baseUrl}}/api/users/{{sellerId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "users",
-                "1"
+                "{{sellerId}}"
               ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "GET /api/users/999 -> 404",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 404\", function () { pm.response.to.have.status(404); });",
-                  ""
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Matches seller id', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('sellerId')));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "POST Создать пользователя (Admin)",
           "request": {
-            "method": "GET",
+            "method": "POST",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users/999",
+              "raw": "{{baseUrl}}/api/users",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "users",
-                "999"
+                "users"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"tempuser_{{$timestamp}}\",\n  \"email\": \"temp_{{$timestamp}}@mail.ru\",\n  \"password\": \"TempUser123!\",\n  \"role\": \"USER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
-        },
-        {
-          "name": "PATCH /api/users/1",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"email изменился\", function () { pm.expect(pm.response.json().email).to.eql(\"new@mail.ru\"); });"
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('tempUserId', pm.response.json().id);"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "PATCH Обновить email пользователя",
           "request": {
             "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"new@mail.ru\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
+            "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users/1",
+              "raw": "{{baseUrl}}/api/users/{{tempUserId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "users",
-                "1"
+                "{{tempUserId}}"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"updated_temp_{{$timestamp}}@mail.ru\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
-        },
-        {
-          "name": "DELETE /api/users/3",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 204\", function () { pm.response.to.have.status(204); });",
-                  ""
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "DELETE Удалить временного пользователя",
           "request": {
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users/3",
+              "raw": "{{baseUrl}}/api/users/{{tempUserId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "users",
-                "3"
+                "{{tempUserId}}"
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 204 No Content', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
       "name": "2. collectible-items",
+      "auth": {
+        "type": "basic",
+        "basic": [
+          {
+            "key": "username",
+            "value": "{{sellerUsername}}",
+            "type": "string"
+          },
+          {
+            "key": "password",
+            "value": "{{sellerPass}}",
+            "type": "string"
+          }
+        ]
+      },
       "item": [
         {
-          "name": "POST /api/collectible-items (id=1)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.test(\"owner вложенный объект\", function () { pm.expect(pm.response.json().owner.id).to.eql(1); });"
-                ]
-              }
-            }
-          ],
+          "name": "POST Создать предмет коллекционирования",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Старинная монета\",\n  \"description\": \"1913 год\",\n  \"ownerId\": 1,\n  \"condition\": \"отличное\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
+            "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/collectible-items",
               "host": [
@@ -680,112 +536,35 @@
                 "api",
                 "collectible-items"
               ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/collectible-items (id=2)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Марка\",\n  \"description\": \"1920 год\",\n  \"ownerId\": 1,\n  \"condition\": \"хорошее\"\n}",
+              "raw": "{\n  \"name\": \"Винтажные часы Молния\",\n  \"description\": \"Карманные часы 1965 года, механика\",\n  \"condition\": \"EXCELLENT\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/collectible-items",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "collectible-items"
-              ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "POST /api/collectible-items владелец не существует -> 400",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 400\", function () { pm.response.to.have.status(400); });",
-                  ""
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('itemId', data.id);",
+                  "pm.test('Owner is seller', () => pm.expect(data.owner.username).to.eql(pm.collectionVariables.get('sellerUsername')));"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"X\",\n  \"ownerId\": 999\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/collectible-items",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "collectible-items"
-              ]
-            }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "GET /api/collectible-items",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
-                ]
-              }
-            }
-          ],
+          "name": "GET Все предметы",
           "request": {
             "method": "GET",
             "header": [],
@@ -800,120 +579,114 @@
               ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "GET /api/collectible-items/1",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "GET Предмет по itemId",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/collectible-items/1",
+              "raw": "{{baseUrl}}/api/collectible-items/{{itemId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "collectible-items",
-                "1"
+                "{{itemId}}"
               ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "PATCH /api/collectible-items/1",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Id matches', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('itemId')));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "PATCH Обновить описание предмета (Seller)",
           "request": {
             "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"condition\": \"идеальное\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
+            "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/collectible-items/1",
+              "raw": "{{baseUrl}}/api/collectible-items/{{itemId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "collectible-items",
-                "1"
+                "{{itemId}}"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Карманные часы 1965 года, механика, отличное состояние\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
     {
       "name": "3. auction-lots",
+      "auth": {
+        "type": "basic",
+        "basic": [
+          {
+            "key": "username",
+            "value": "{{sellerUsername}}",
+            "type": "string"
+          },
+          {
+            "key": "password",
+            "value": "{{sellerPass}}",
+            "type": "string"
+          }
+        ]
+      },
       "item": [
         {
-          "name": "POST /api/auction-lots (id=1)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
-                  ""
-                ]
-              }
-            }
-          ],
+          "name": "POST Создать лот аукциона",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"itemId\": 1,\n  \"startPrice\": 1000,\n  \"bidStep\": 100,\n  \"startTime\": \"2026-10-01T00:00:00Z\",\n  \"endTime\": \"2026-12-31T00:00:00Z\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
+            "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/auction-lots",
               "host": [
@@ -923,112 +696,47 @@
                 "api",
                 "auction-lots"
               ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/auction-lots (id=2)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"itemId\": 2,\n  \"startPrice\": 500,\n  \"bidStep\": 50,\n  \"startTime\": \"2026-10-01T00:00:00Z\",\n  \"endTime\": \"2026-12-31T00:00:00Z\"\n}",
+              "raw": "{\n  \"itemId\": \"{{itemId}}\",\n  \"startPrice\": 1000.0,\n  \"bidStep\": 100.0,\n  \"startTime\": \"2026-11-01T10:00:00Z\",\n  \"endTime\": \"2026-12-01T20:00:00Z\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-lots",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auction-lots"
-              ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "POST /api/auction-lots повторный лот на предмет 1 -> 409",
+          "response": [],
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Ensure itemId is cast as integer",
+                  "const body = JSON.parse(pm.request.body.raw);",
+                  "body.itemId = parseInt(pm.collectionVariables.get('itemId'));",
+                  "pm.request.body.raw = JSON.stringify(body);"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 409\", function () { pm.response.to.have.status(409); });",
-                  ""
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('lotId', data.id);",
+                  "pm.test('Status is CREATED', () => pm.expect(data.status).to.eql('CREATED'));"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"itemId\": 1,\n  \"startPrice\": 1000,\n  \"bidStep\": 100,\n  \"startTime\": \"2026-10-01T00:00:00Z\",\n  \"endTime\": \"2026-12-31T00:00:00Z\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-lots",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auction-lots"
-              ]
-            }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "GET /api/auction-lots",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
-                ]
-              }
-            }
-          ],
+          "name": "GET Все лоты",
           "request": {
             "method": "GET",
             "header": [],
@@ -1043,791 +751,1015 @@
               ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "GET /api/auction-lots/1",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "GET Лот по lotId",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/auction-lots/1",
+              "raw": "{{baseUrl}}/api/auction-lots/{{lotId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "auction-lots",
-                "1"
+                "{{lotId}}"
               ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "PATCH /api/auction-lots/1",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Matches lotId', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('lotId')));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "PATCH Обновить начальную цену лота (Seller)",
           "request": {
             "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"endTime\": \"2027-01-31T00:00:00Z\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
+            "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/auction-lots/1",
+              "raw": "{{baseUrl}}/api/auction-lots/{{lotId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "auction-lots",
-                "1"
+                "{{lotId}}"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"startPrice\": 1200.0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
-        },
-        {
-          "name": "DELETE /api/auction-lots/2",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 204\", function () { pm.response.to.have.status(204); });",
-                  ""
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-lots/2",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auction-lots",
-                "2"
-              ]
-            }
-          },
-          "response": []
+          ]
         }
       ]
     },
     {
-      "name": "4. bids",
+      "name": "4. Бизнес-сценарий (лаба 3)",
       "item": [
         {
-          "name": "POST /api/bids 1000 (id=1)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.test(\"время поставил сервер\", function () { pm.expect(pm.response.json().createdAt).to.be.a(\"string\"); });",
-                  "pm.test(\"user вложенный объект\", function () { pm.expect(pm.response.json().user.id).to.eql(2); });"
-                ]
-              }
-            }
-          ],
+          "name": "1. Активация лота (Seller)",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"lotId\": 1,\n  \"userId\": 2,\n  \"amount\": 1000\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
+            "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/bids",
+              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/activate",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "bids"
+                "business",
+                "lots",
+                "{{lotId}}",
+                "activate"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{sellerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{sellerPass}}",
+                  "type": "string"
+                }
               ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "POST /api/bids 1050 (мало) -> 400",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 400\", function () { pm.response.to.have.status(400); });",
-                  ""
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Lot status is ACTIVE', () => pm.expect(pm.response.json().status).to.eql('ACTIVE'));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "2. Конкурентная ставка (Buyer)",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"lotId\": 1,\n  \"userId\": 2,\n  \"amount\": 1050\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
+            "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/bids",
+              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/bids",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
+                "business",
+                "lots",
+                "{{lotId}}",
                 "bids"
               ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/bids владелец на свой лот -> 409",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 409\", function () { pm.response.to.have.status(409); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{buyerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{buyerPass}}",
+                  "type": "string"
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"lotId\": 1,\n  \"userId\": 1,\n  \"amount\": 5000\n}",
+              "raw": "{\n  \"amount\": 1500.0\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/bids",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bids"
-              ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "POST /api/bids 1100 (id=2)",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
-                  ""
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('bidId', data.id);",
+                  "pm.test('Amount is 1500', () => pm.expect(data.amount).to.eql(1500.00));",
+                  "pm.test('Bidder is buyer', () => pm.expect(data.bidder.username).to.eql(pm.collectionVariables.get('buyerUsername')));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "3. Закрытие аукциона и сделка (Seller)",
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"lotId\": 1,\n  \"userId\": 2,\n  \"amount\": 1100\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
+            "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/bids",
+              "raw": "{{baseUrl}}/api/business/lots/{{lotId}}/close",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "bids"
+                "business",
+                "lots",
+                "{{lotId}}",
+                "close"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{sellerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{sellerPass}}",
+                  "type": "string"
+                }
               ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "GET /api/bids",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "const data = pm.response.json();",
+                  "pm.collectionVariables.set('dealId', data.id);",
+                  "pm.test('TransferStatus is PENDING', () => pm.expect(data.transferStatus).to.eql('PENDING'));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "4. Завершение сделки и передача прав (Seller)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/business/deals/{{dealId}}/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "business",
+                "deals",
+                "{{dealId}}",
+                "complete"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{sellerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{sellerPass}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('TransferStatus is TRANSFERRED', () => pm.expect(pm.response.json().transferStatus).to.eql('TRANSFERRED'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Проверка смены владельца предмета",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/bids",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bids"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET /api/bids/1",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/bids/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bids",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "PATCH /api/bids/2",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"amount\": 1200\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/bids/2",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bids",
-                "2"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "DELETE /api/bids/2",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 204\", function () { pm.response.to.have.status(204); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/bids/2",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bids",
-                "2"
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "5. auction-deals",
-      "item": [
-        {
-          "name": "POST /api/auction-deals (id=1)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
-                  "pm.test(\"сумма из ставки\", function () { pm.expect(Number(pm.response.json().amount)).to.eql(1000); });"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"lotId\": 1,\n  \"bidId\": 1\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-deals",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auction-deals"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/auction-deals повторная сделка по лоту -> 409",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 409\", function () { pm.response.to.have.status(409); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"lotId\": 1,\n  \"bidId\": 1\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-deals",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auction-deals"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET /api/auction-deals",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-deals",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auction-deals"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "GET /api/auction-deals/1",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-deals/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auction-deals",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "PATCH /api/auction-deals/1",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"transferStatus\": \"TRANSFERRED\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-deals/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auction-deals",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "DELETE /api/auction-deals/1",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 204\", function () { pm.response.to.have.status(204); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-deals/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auction-deals",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "POST /api/auction-deals (id=2, заново для проверки каскада)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 201\", function () { pm.response.to.have.status(201); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"lotId\": 1,\n  \"bidId\": 1\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-deals",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auction-deals"
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "6. каскадное удаление",
-      "item": [
-        {
-          "name": "DELETE /api/collectible-items/2",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Статус 204\", function () { pm.response.to.have.status(204); });",
-                  ""
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/collectible-items/2",
+              "raw": "{{baseUrl}}/api/collectible-items/{{itemId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "collectible-items",
-                "2"
+                "{{itemId}}"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{buyerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{buyerPass}}",
+                  "type": "string"
+                }
               ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "DELETE /api/users/1 (владелец)",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 204\", function () { pm.response.to.have.status(204); });",
-                  ""
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('New owner is buyer', () => pm.expect(pm.response.json().owner.username).to.eql(pm.collectionVariables.get('buyerUsername')));"
                 ]
               }
             }
-          ],
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. bids",
+      "auth": {
+        "type": "basic",
+        "basic": [
+          {
+            "key": "username",
+            "value": "{{buyerUsername}}",
+            "type": "string"
+          },
+          {
+            "key": "password",
+            "value": "{{buyerPass}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "GET Все ставки",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET Ставка по bidId",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bids/{{bidId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bids",
+                "{{bidId}}"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Bid matches bidId', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('bidId')));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. auction-deals",
+      "auth": {
+        "type": "basic",
+        "basic": [
+          {
+            "key": "username",
+            "value": "{{adminUser}}",
+            "type": "string"
+          },
+          {
+            "key": "password",
+            "value": "{{adminPass}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "GET Все сделки (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auction-deals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-deals"
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET Сделка по dealId (Участник Buyer)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auction-deals/{{dealId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-deals",
+                "{{dealId}}"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{buyerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{buyerPass}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Matches dealId', () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get('dealId')));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Проверки безопасности и RBAC",
+      "item": [
+        {
+          "name": "1. Запрос без авторизации -> 401 Unauthorized",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. POST запрос (Без CSRF) -> 403 Forbidden",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/collectible-items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "collectible-items"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{sellerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{sellerPass}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Тестовый предмет\",\n  \"description\": \"Тест проверки CSRF защиты\",\n  \"condition\": \"GOOD\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 403 Forbidden without CSRF', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Обычный USER вызывает GET /api/users -> 403 Forbidden",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{buyerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{buyerPass}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Бывший владелец (Seller) пытается удалить переданный предмет -> 403 Forbidden",
           "request": {
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users/1",
+              "raw": "{{baseUrl}}/api/collectible-items/{{itemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "collectible-items",
+                "{{itemId}}"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{sellerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{sellerPass}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Buyer меняет статус лота вручную через PATCH -> 403 Forbidden",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auction-lots/{{lotId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auction-lots",
+                "{{lotId}}"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{buyerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{buyerPass}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Попытка эскалации роли при регистрации (role ADMIN -> USER)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"hacker_{{$timestamp}}\",\n  \"email\": \"hacker_{{$timestamp}}@mail.ru\",\n  \"password\": \"HackerPass123!\",\n  \"role\": \"ADMIN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.test('Role is forced to USER', () => pm.expect(pm.response.json().role).to.eql('USER'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.1 Admin блокирует покупателя (status BLOCKED)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{buyerId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "users",
-                "1"
+                "{{buyerId}}"
               ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{adminUser}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPass}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"BLOCKED\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
-        },
-        {
-          "name": "GET /api/collectible-items -> []",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"пусто\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('User status is BLOCKED', () => pm.expect(pm.response.json().status).to.eql('BLOCKED'));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "7.2 Заблокированный покупатель вызывает /api/auth/me -> 401 Unauthorized",
           "request": {
             "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{buyerUsername}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{buyerPass}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Blocked user gets 401 Unauthorized', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7.3 Admin разблокирует покупателя (status ACTIVE)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{buyerId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{buyerId}}"
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{adminUser}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{adminPass}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('User status is restored to ACTIVE', () => pm.expect(pm.response.json().status).to.eql('ACTIVE'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "8. каскадное удаление",
+      "auth": {
+        "type": "basic",
+        "basic": [
+          {
+            "key": "username",
+            "value": "{{adminUser}}",
+            "type": "string"
+          },
+          {
+            "key": "password",
+            "value": "{{adminPass}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "1. Создать изолированного пользователя для теста удаления",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"cleanup_{{$timestamp}}\",\n  \"email\": \"cleanup_{{$timestamp}}@mail.ru\",\n  \"password\": \"CleanPass123!\",\n  \"role\": \"USER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('cleanupUserId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Создать предмет для изолированного пользователя",
+          "request": {
+            "method": "POST",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/collectible-items",
@@ -1838,99 +1770,131 @@
                 "api",
                 "collectible-items"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Предмет под удаление\",\n  \"description\": \"Тест каскадного удаления\",\n  \"ownerId\": \"{{cleanupUserId}}\",\n  \"condition\": \"GOOD\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = JSON.parse(pm.request.body.raw);",
+                  "body.ownerId = parseInt(pm.collectionVariables.get('cleanupUserId'));",
+                  "pm.request.body.raw = JSON.stringify(body);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('cleanupItemId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
         },
         {
-          "name": "GET /api/auction-lots -> []",
+          "name": "3. Удалить изолированный предмет (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/collectible-items/{{cleanupItemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "collectible-items",
+                "{{cleanupItemId}}"
+              ]
+            }
+          },
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"пусто\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
+                  "pm.test('Status is 204 No Content', () => pm.response.to.have.status(204));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "4. Удалить изолированного пользователя (Admin)",
           "request": {
-            "method": "GET",
+            "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/auction-lots",
+              "raw": "{{baseUrl}}/api/users/{{cleanupUserId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "auction-lots"
+                "users",
+                "{{cleanupUserId}}"
               ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "GET /api/bids -> []",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"пусто\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
+                  "pm.test('Status is 204 No Content', () => pm.response.to.have.status(204));"
                 ]
               }
             }
-          ],
+          ]
+        },
+        {
+          "name": "5. Проверить отсутствие удалённого пользователя -> 404 Not Found",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/bids",
+              "raw": "{{baseUrl}}/api/users/{{cleanupUserId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "bids"
+                "users",
+                "{{cleanupUserId}}"
               ]
             }
           },
-          "response": []
-        },
-        {
-          "name": "GET /api/auction-deals -> []",
+          "response": [],
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"Статус 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"пусто\", function () { pm.expect(pm.response.json().length).to.eql(0); });"
+                  "pm.test('Status is 404 Not Found', () => pm.response.to.have.status(404));"
                 ]
               }
             }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/auction-deals",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "auction-deals"
-              ]
-            }
-          },
-          "response": []
+          ]
         }
       ]
     }
@@ -1939,26 +1903,108 @@
     {
       "listen": "prerequest",
       "script": {
+        "type": "text/javascript",
         "exec": [
-          "if (!['GET', 'HEAD', 'OPTIONS'].includes(pm.request.method)) {\r",
-          "    const token = pm.collectionVariables.get('csrf');\r",
-          "    if (token) {\r",
-          "        pm.request.headers.upsert({ key: 'X-XSRF-TOKEN', value: token });\r",
-          "    }\r",
+          "const method = pm.request.method;",
+          "const isMutating = !['GET', 'HEAD', 'OPTIONS'].includes(method);",
+          "const reqName = (pm.info && pm.info.requestName) ? pm.info.requestName : '';",
+          "const isCsrfTest = reqName.indexOf('Без CSRF') !== -1;",
+          "",
+          "if (isMutating && !isCsrfTest) {",
+          "    const token = pm.collectionVariables.get('csrf');",
+          "    if (token) {",
+          "        pm.request.headers.upsert({ key: 'X-XSRF-TOKEN', value: token });",
+          "    }",
           "}"
-        ],
-        "type": "text/javascript"
+        ]
       }
     }
   ],
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080"
+      "value": "http://localhost:8080",
+      "type": "string"
     },
     {
       "key": "csrf",
-      "value": ""
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminUser",
+      "value": "admin",
+      "type": "string"
+    },
+    {
+      "key": "adminPass",
+      "value": "AdminPass123!",
+      "type": "string"
+    },
+    {
+      "key": "sellerPass",
+      "value": "SellerPass123!",
+      "type": "string"
+    },
+    {
+      "key": "buyerPass",
+      "value": "BuyerPass123!",
+      "type": "string"
+    },
+    {
+      "key": "sellerUsername",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sellerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "buyerUsername",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "buyerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "itemId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "lotId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bidId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "dealId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tempUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cleanupUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cleanupItemId",
+      "value": "",
+      "type": "string"
     }
   ]
 }

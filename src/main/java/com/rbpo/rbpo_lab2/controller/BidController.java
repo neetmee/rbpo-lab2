@@ -62,6 +62,6 @@ public class BidController {
     private BidDto.Response toResponse(Bid b) {
         User u = userService.getById(b.userId());
         return new BidDto.Response(b.id(), b.lotId(),
-                new UserDto.Response(u.getId(), u.getUsername(), u.getEmail()), b.amount(), b.createdAt());
+                new UserDto.Public(u.getId(), u.getUsername()), b.amount(), b.createdAt());
     }
 }

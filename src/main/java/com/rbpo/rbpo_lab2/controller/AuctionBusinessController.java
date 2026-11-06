@@ -1,16 +1,11 @@
 package com.rbpo.rbpo_lab2.controller;
 
-import com.rbpo.rbpo_lab2.dto.AuctionDealDto;
-import com.rbpo.rbpo_lab2.dto.AuctionLotDto;
-import com.rbpo.rbpo_lab2.dto.BidDto;
-import com.rbpo.rbpo_lab2.dto.UserDto;
-import com.rbpo.rbpo_lab2.model.AuctionDeal;
-import com.rbpo.rbpo_lab2.model.AuctionLot;
-import com.rbpo.rbpo_lab2.model.Bid;
-import com.rbpo.rbpo_lab2.model.User;
+import com.rbpo.rbpo_lab2.dto.*;
+import com.rbpo.rbpo_lab2.model.*;
 import com.rbpo.rbpo_lab2.security.CurrentUser;
 import com.rbpo.rbpo_lab2.service.AuctionBusinessService;
 import com.rbpo.rbpo_lab2.service.UserService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +42,7 @@ public class AuctionBusinessController {
     @PostMapping("/lots/{lotId}/bids")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<BidDto.Response> placeBid(@PathVariable Long lotId,
-                                                    @RequestBody PlaceBidRequest payload) {
+                                                    @Valid @RequestBody PlaceBidRequest payload) { // @Valid добавлен
         Bid bid = businessService.placeCompetitiveBid(lotId, currentUser.id(), payload.amount());
         return ResponseEntity.ok(toBidResponse(bid));
     }
@@ -56,7 +51,8 @@ public class AuctionBusinessController {
     @PreAuthorize("hasRole('ADMIN') or @authz.isLotSeller(#lotId, authentication)")
     public ResponseEntity<AuctionDealDto.Response> closeAuction(@PathVariable Long lotId) {
         AuctionDeal deal = businessService.closeAuctionLot(lotId);
-        return ResponseEntity.ok(toDealResponse(deal));
+        // Без ставок возвращаем 204 No Content вместо 500 NPE
+        return deal == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(toDealResponse(deal));
     }
 
     @PostMapping("/deals/{dealId}/complete")
@@ -83,6 +79,6 @@ public class AuctionBusinessController {
 
     private BidDto.Response toBidResponse(Bid b) {
         User u = userService.getById(b.userId());
-        return new BidDto.Response(b.id(), b.lotId(), new UserDto.Response(u.getId(), u.getUsername(), u.getEmail()), b.amount(), b.createdAt());
+        return new BidDto.Response(b.id(), b.lotId(), new UserDto.Public(u.getId(), u.getUsername()), b.amount(), b.createdAt());
     }
 }

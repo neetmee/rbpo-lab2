@@ -1,6 +1,6 @@
 package com.rbpo.rbpo_lab2.security;
 
-import com.rbpo.rbpo_lab2.model.User;
+import com.rbpo.rbpo_lab2.model.*;
 import com.rbpo.rbpo_lab2.repository.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -8,67 +8,71 @@ import org.springframework.stereotype.Component;
 @Component("authz")
 public class AuthzChecks {
 
-    private final UserRepository userRepository;
-    private final CollectibleItemRepository itemRepository;
-    private final AuctionLotRepository lotRepository;
-    private final BidRepository bidRepository;
-    private final AuctionDealRepository dealRepository;
+    private final CollectibleItemRepository itemRepo;
+    private final AuctionLotRepository lotRepo;
+    private final BidRepository bidRepo;
+    private final AuctionDealRepository dealRepo;
+    private final UserRepository userRepo;
 
-    public AuthzChecks(UserRepository userRepository,
-                       CollectibleItemRepository itemRepository,
-                       AuctionLotRepository lotRepository,
-                       BidRepository bidRepository,
-                       AuctionDealRepository dealRepository) {
-        this.userRepository = userRepository;
-        this.itemRepository = itemRepository;
-        this.lotRepository = lotRepository;
-        this.bidRepository = bidRepository;
-        this.dealRepository = dealRepository;
+    public AuthzChecks(CollectibleItemRepository itemRepo,
+                       AuctionLotRepository lotRepo,
+                       BidRepository bidRepo,
+                       AuctionDealRepository dealRepo,
+                       UserRepository userRepo) {
+        this.itemRepo = itemRepo;
+        this.lotRepo = lotRepo;
+        this.bidRepo = bidRepo;
+        this.dealRepo = dealRepo;
+        this.userRepo = userRepo;
     }
 
-    private Long getAuthUserId(Authentication auth) {
-        if (auth == null) return null;
-        return userRepository.findByUsername(auth.getName()).map(User::getId).orElse(null);
+    private Long getUserId(Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) return null;
+        return userRepo.findByUsername(auth.getName()).map(User::getId).orElse(null);
     }
 
     public boolean isItemOwner(Long itemId, Authentication auth) {
-        Long currentUserId = getAuthUserId(auth);
-        return itemRepository.findById(itemId)
-                .map(item -> item.ownerId().equals(currentUserId))
-                .orElse(false);
+        if (itemId == null) return false;
+        Long uid = getUserId(auth);
+        return uid != null && itemRepo.findById(itemId)
+                .map(i -> i.ownerId().equals(uid)).orElse(false);
     }
 
     public boolean isLotSeller(Long lotId, Authentication auth) {
-        Long currentUserId = getAuthUserId(auth);
-        return lotRepository.findById(lotId)
-                .flatMap(lot -> itemRepository.findById(lot.itemId()))
-                .map(item -> item.ownerId().equals(currentUserId))
-                .orElse(false);
+        if (lotId == null) return false;
+        Long uid = getUserId(auth);
+        return uid != null && lotRepo.findById(lotId)
+                .flatMap(lot -> itemRepo.findById(lot.itemId()))
+                .map(item -> item.ownerId().equals(uid)).orElse(false);
     }
 
     public boolean isBidAuthor(Long bidId, Authentication auth) {
-        Long currentUserId = getAuthUserId(auth);
-        return bidRepository.findById(bidId)
-                .map(bid -> bid.userId().equals(currentUserId))
-                .orElse(false);
-    }
-
-    public boolean isDealSeller(Long dealId, Authentication auth) {
-        Long currentUserId = getAuthUserId(auth);
-        return dealRepository.findById(dealId)
-                .flatMap(deal -> lotRepository.findById(deal.lotId()))
-                .flatMap(lot -> itemRepository.findById(lot.itemId()))
-                .map(item -> item.ownerId().equals(currentUserId))
-                .orElse(false);
+        if (bidId == null) return false;
+        Long uid = getUserId(auth);
+        return uid != null && bidRepo.findById(bidId)
+                .map(b -> b.userId().equals(uid)).orElse(false);
     }
 
     public boolean isDealParticipant(Long dealId, Authentication auth) {
-        Long currentUserId = getAuthUserId(auth);
-        return dealRepository.findById(dealId).map(deal -> {
-            boolean isWinner = bidRepository.findById(deal.bidId())
-                    .map(bid -> bid.userId().equals(currentUserId))
-                    .orElse(false);
-            return isWinner || isDealSeller(dealId, auth);
+        if (dealId == null) return false;
+        Long uid = getUserId(auth);
+        if (uid == null) return false;
+        return dealRepo.findById(dealId).map(deal -> {
+            boolean isBuyer = bidRepo.findById(deal.bidId())
+                    .map(b -> b.userId().equals(uid)).orElse(false);
+            boolean isSeller = lotRepo.findById(deal.lotId())
+                    .flatMap(lot -> itemRepo.findById(lot.itemId()))
+                    .map(item -> item.ownerId().equals(uid)).orElse(false);
+            return isBuyer || isSeller;
         }).orElse(false);
+    }
+
+    public boolean isDealSeller(Long dealId, Authentication auth) {
+        if (dealId == null) return false;
+        Long uid = getUserId(auth);
+        return uid != null && dealRepo.findById(dealId)
+                .flatMap(deal -> lotRepo.findById(deal.lotId()))
+                .flatMap(lot -> itemRepo.findById(lot.itemId()))
+                .map(item -> item.ownerId().equals(uid)).orElse(false);
     }
 }
