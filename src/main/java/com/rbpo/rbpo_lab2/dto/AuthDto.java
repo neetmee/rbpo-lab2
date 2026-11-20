@@ -9,6 +9,23 @@ import jakarta.validation.constraints.Size;
 public class AuthDto {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
+    public record LoginRequest(
+            @NotBlank(message = "Username обязателен")
+            String username,
+
+            @NotBlank(message = "Password обязателен")
+            String password,
+
+            String deviceId
+    ) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record RefreshRequest(
+            @NotBlank(message = "refreshToken обязателен")
+            String refreshToken
+    ) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record RegisterRequest(
             @NotBlank(message = "Username обязателен")
             @Pattern(regexp = "^[A-Za-z0-9_.-]{3,50}$", message = "Username должен содержать от 3 до 50 символов без спецсимволов")
@@ -20,8 +37,13 @@ public class AuthDto {
 
             @NotBlank(message = "Password обязателен")
             @Size(max = 72, message = "Пароль не должен превышать 72 символа")
-            String password
+            String password,
+
+            String deviceId
     ) {}
 
-    public record CsrfResponse(String token, String headerName) {}
+    public record TokenPairResponse(
+            String accessToken,
+            String refreshToken
+    ) {}
 }

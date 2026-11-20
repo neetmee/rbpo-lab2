@@ -1,5 +1,6 @@
 package com.rbpo.rbpo_lab2.exception;
 
+import com.rbpo.rbpo_lab2.service.TokenSessionService;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -7,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,6 +23,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleApi(ApiException e) {
         return ResponseEntity.status(e.getStatus()).body(Map.of("error", e.getMessage()));
     }
+
+    @ExceptionHandler(TokenSessionService.InvalidRefreshException.class)
+    public ResponseEntity<?> handleInvalidRefresh(TokenSessionService.InvalidRefreshException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "UNAUTHORIZED", "message", "Недействительный, просроченный или отозванный refresh-токен"));
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<?> handleAuthentication(AuthenticationException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "UNAUTHORIZED", "message", "Ошибка аутентификации: неверные учетные данные или аккаунт заблокирован"));
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<?> handleResponseStatus(ResponseStatusException e) {
         return ResponseEntity.status(e.getStatusCode())

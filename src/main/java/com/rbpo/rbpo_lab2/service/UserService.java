@@ -1,10 +1,6 @@
 package com.rbpo.rbpo_lab2.service;
 
-import java.util.List;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.rbpo.rbpo_lab2.dto.AuthDto;
 import com.rbpo.rbpo_lab2.exception.ApiException;
 import com.rbpo.rbpo_lab2.model.AccountStatus;
 import com.rbpo.rbpo_lab2.model.Role;
@@ -13,6 +9,10 @@ import com.rbpo.rbpo_lab2.repository.BidRepository;
 import com.rbpo.rbpo_lab2.repository.CollectibleItemRepository;
 import com.rbpo.rbpo_lab2.repository.UserRepository;
 import com.rbpo.rbpo_lab2.security.PasswordPolicy;
+import java.util.List;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -63,6 +63,23 @@ public class UserService {
         Role userRole = role != null ? role : Role.USER;
 
         return users.save(new User(null, username, email, hash, userRole, AccountStatus.ACTIVE));
+    }
+
+    @Transactional
+    public TokenSessionService.TokenPair register(AuthDto.RegisterRequest req, TokenSessionService tokenSessionService) {
+        if (users.existsByUsername(req.username())) {
+            throw ApiException.conflict("Имя пользователя уже занято");
+        }
+        if (users.existsByEmail(req.email())) {
+            throw ApiException.conflict("Email уже используется");
+        }
+        passwordPolicy.validate(req.password(), req.username());
+
+        String hash = passwordEncoder.encode(req.password());
+        User user = new User(null, req.username(), req.email(), hash, Role.USER, AccountStatus.ACTIVE);
+        User saved = users.saveAndFlush(user);
+
+        return tokenSessionService.issuePair(saved, req.deviceId());
     }
 
     public User update(Long id, String username, String email, Role role, AccountStatus status) {

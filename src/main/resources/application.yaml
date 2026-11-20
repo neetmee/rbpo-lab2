@@ -19,3 +19,8 @@ server:
 app:
   admin:
     password: ${ADMIN_PASSWORD:AdminPass123!}
+
+jwt:
+  secret: ${JWT_SECRET}
+  accessExpiration: 900000
+  refreshExpiration: 604800000

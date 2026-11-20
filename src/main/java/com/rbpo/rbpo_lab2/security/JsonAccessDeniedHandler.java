@@ -16,6 +16,6 @@ public class JsonAccessDeniedHandler implements AccessDeniedHandler {
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\"error\": \"FORBIDDEN\", \"message\": \"Отказано в доступе: недостаточно прав или отсутствует валидный CSRF-токен\"}");
+        response.getWriter().write("{\"error\": \"FORBIDDEN\", \"message\": \"Отказано в доступе: недостаточно прав\"}");
     }
 }
