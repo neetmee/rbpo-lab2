@@ -19,7 +19,7 @@ RESTful веб-приложение для проведения торгов р�
 
 ---
 
-## 2. Предметная модель (Основные сущности)
+## 2. Предметная модель и схема БД
 
 - **User (`users`)** — участник аукциона с ролями (`ROLE_USER`, `ROLE_ADMIN`) и статусом аккаунта (`ACTIVE`, `BLOCKED`).
 - **UserSession (`user_sessions`)** — серверная запись выданной пары токенов (`id` UUID, `username`, `device_id`, `access_token`, `refresh_token` с ограничением `UNIQUE`, `access_token_expiry`, `refresh_token_expiry`, `status`: `ACTIVE`, `USED`, `REVOKED`).
@@ -27,6 +27,23 @@ RESTful веб-приложение для проведения торгов р�
 - **AuctionLot (`auction_lots`)** — аукционный лот, привязанный к предмету. Содержит стартовую цену, шаг ставки, временные рамки и статус (`CREATED`, `ACTIVE`, `CLOSED`, `CANCELLED`).
 - **Bid (`bids`)** — ставка участника в рамках конкретного лота с фиксацией времени и суммы.
 - **AuctionDeal (`auction_deals`)** — сделка по итогам торгов. Связывает лот, победную ставку и статус передачи права собственности (`PENDING`, `TRANSFERRED`, `CANCELLED`).
+
+Подготовка таблицы и прав для сервисной роли приложения:
+
+```sql
+CREATE TABLE IF NOT EXISTS user_sessions (
+    id UUID PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    device_id VARCHAR(255),
+    access_token TEXT NOT NULL,
+    refresh_token TEXT NOT NULL UNIQUE,
+    access_token_expiry TIMESTAMPTZ NOT NULL,
+    refresh_token_expiry TIMESTAMPTZ NOT NULL,
+    status VARCHAR(32) NOT NULL
+);
+
+GRANT SELECT, INSERT, UPDATE ON user_sessions TO auction_app;
+```
 
 ---
 
@@ -50,14 +67,15 @@ RESTful веб-приложение для проведения торгов р�
 ## 4. Архитектура безопасности
 
 1. **Аутентификация по JWT (`HS256`) и режим `STATELESS`:**
-   - HTTP Basic Auth и CSRF-защита отключены: `accessToken` передаётся в заголовке `Authorization: Bearer <accessToken>`, а `refreshToken` — в JSON-теле запроса `POST /api/auth/refresh`.
+   - HTTP Basic Auth и CSRF-защита отключены: `accessToken` передаётся в заголовке `Authorization: Bearer <accessToken>`, а `refreshToken` — в JSON-теле запроса обновления токенов (`POST /api/auth/refresh` или `POST /auth/refresh`).
+   - Эндпоинты входа, регистрации и обновления токенов доступны по префиксам `/api/auth/*` и `/auth/*`.
    - Оба токена формируются в виде подписанных JWT (`alg: HS256`) с claims `sub` (`username`), `type` (`"access"` или `"refresh"`), `jti` (`UUID.randomUUID()`), `iat` и `exp` (с точностью до секунд).
    - `JwtTokenFilter` пропускает только токены с `type = "access"`, проверяет подпись, срок действия и обязательные claims, а также актуальное состояние пользователя (`isEnabled()`, `isAccountNonLocked()`). При блокировке аккаунта доступ по ранее выданному токену отклоняется с кодом `401 Unauthorized`.
    - Пароли хешируются с использованием `BCryptPasswordEncoder`.
 
 2. **Ротация refresh-токенов и статусы сессий:**
-   - При входе (`POST /api/auth/login`) и регистрации (`POST /api/auth/register`) создаётся пара `accessToken` / `refreshToken` и сохраняется сессия со статусом `ACTIVE`.
-   - При обновлении (`POST /api/auth/refresh`) запись сессии выбирается с блокировкой (`PESSIMISTIC_WRITE`), прежняя сессия переводится в статус `USED`, а для новой пары создаётся отдельная строка со статусом `ACTIVE` (с теми же `username` и `deviceId`).
+   - При входе (`login`) и регистрации (`register`) создаётся пара `accessToken` / `refreshToken` и сохраняется сессия со статусом `ACTIVE`.
+   - При обновлении (`refresh`) запись сессии выбирается с блокировкой (`PESSIMISTIC_WRITE`), прежняя сессия переводится в статус `USED`, а для новой пары создаётся отдельная строка со статусом `ACTIVE` (с теми же `username` и `deviceId`).
    - Повторное предъявление уже использованного (`USED`) `refreshToken` переводит эту сессию в статус `REVOKED` (сохраняется даже при возврате ошибки) и отклоняется с кодом `401 Unauthorized`; уже отозванная (`REVOKED`) сессия также возвращает `401`.
    - > **Примечание о хранении `refreshToken` в БД:** в соответствии с условиями задания `refreshToken` хранится в таблице `user_sessions` в открытом виде (с ограничением `UNIQUE`). В промышленной эксплуатации вместо хранения сырого токена в БД предпочтительно сохранять его криптографический хэш.
 
@@ -111,11 +129,18 @@ RESTful веб-приложение для проведения торгов р�
 
 ---
 
-## 6. Тестирование (Postman)
+## 6. Тестирование (Postman) и проверка БД
 
-В директории `postman/auction_lab5.postman_collection.json` находится обновлённая коллекция запросов и автотестов Postman:
-1. **0. Auth** — вход администратора, регистрация продавца и покупателя с получением пары токенов (`201`) и определением `id` через `GET /api/auth/me`.
-2. **1. Сценарий ротации и сессий (5 шагов задания)** — `login` → защищённый запрос с `accessToken` (`200`) → `refresh` (новая пара, строки отличаются) → повторный старый `refresh` (`401` без новой пары) → проверка статусов `REVOKED` / `ACTIVE` в `user_sessions`.
-3. **2. Негативные проверки JWT и авторизации** — запросы без токена (`401`), пустые поля (`400`), неверный пароль (`401`), дубликат регистрации (`409`), `accessToken` в теле `/refresh` (`401`), `refreshToken` в `Bearer` (`401`), мусорный токен (`401`).
-4. **3. Блокировка пользователя (Тест 7.2)** — вход покупателя → блокировка администратором → обращение по живому `accessToken` (`401`) и повторный вход (`401`) → разблокировка.
-5. **4. Аукцион и RBAC** — проверки ролей и прав по `Bearer`-токенам.
+В директории `postman/auction_lab5.postman_collection.json` находится обновлённая коллекция запросов и автотестов Postman с авторизацией по `Bearer`-токенам:
+1. **0. Auth** — вход администратора, регистрация продавца и покупателя с получением пары токенов (`201`) и определением `id` через `GET /api/auth/me`, а также негативные проверки логина/регистрации (`401`, `400`, `409`).
+2. **0.1 Сценарий ротации и сессий (5 шагов)** — `login` → защищённый запрос с `accessToken` (`200`) → `refresh` (новая пара, строки отличаются) → повторный старый `refresh` (`401` без новой пары) → проверка статусов в `user_sessions` и негативные проверки JWT.
+3. **1. users, 2. collectible-items, 3. auction-lots, 4. Бизнес-сценарий, 5. bids, 6. auction-deals, 7. Проверки безопасности и RBAC, 8. каскадное удаление** — полные сценарии работы с сущностями, ролями, блокировкой пользователя (`401` по токену и при повторном входе с последующей разблокировкой) и каскадным удалением.
+
+SQL-запрос для проверки состояния сессий пользователя в таблице `user_sessions`:
+
+```sql
+SELECT id, username, device_id, status, access_token_expiry, refresh_token_expiry
+FROM user_sessions
+WHERE username = 'admin'
+ORDER BY access_token_expiry;
+```
