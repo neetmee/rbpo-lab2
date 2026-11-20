@@ -4,10 +4,12 @@ import com.rbpo.rbpo_lab2.dto.AuthDto;
 import com.rbpo.rbpo_lab2.exception.ApiException;
 import com.rbpo.rbpo_lab2.model.AccountStatus;
 import com.rbpo.rbpo_lab2.model.Role;
+import com.rbpo.rbpo_lab2.model.SessionStatus;
 import com.rbpo.rbpo_lab2.model.User;
 import com.rbpo.rbpo_lab2.repository.BidRepository;
 import com.rbpo.rbpo_lab2.repository.CollectibleItemRepository;
 import com.rbpo.rbpo_lab2.repository.UserRepository;
+import com.rbpo.rbpo_lab2.repository.UserSessionRepository;
 import com.rbpo.rbpo_lab2.security.PasswordPolicy;
 import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,17 +24,23 @@ public class UserService {
     private final BidRepository bidRepo;
     private final PasswordPolicy passwordPolicy;
     private final PasswordEncoder passwordEncoder;
+    private final TokenSessionService tokenSessionService;
+    private final UserSessionRepository sessionRepository;
 
     public UserService(UserRepository users,
                        CollectibleItemRepository itemRepo,
                        BidRepository bidRepo,
                        PasswordPolicy passwordPolicy,
-                       PasswordEncoder passwordEncoder) {
+                       PasswordEncoder passwordEncoder,
+                       TokenSessionService tokenSessionService,
+                       UserSessionRepository sessionRepository) {
         this.users = users;
         this.itemRepo = itemRepo;
         this.bidRepo = bidRepo;
         this.passwordPolicy = passwordPolicy;
         this.passwordEncoder = passwordEncoder;
+        this.tokenSessionService = tokenSessionService;
+        this.sessionRepository = sessionRepository;
     }
 
     public List<User> getAll() {
@@ -66,7 +74,7 @@ public class UserService {
     }
 
     @Transactional
-    public TokenSessionService.TokenPair register(AuthDto.RegisterRequest req, TokenSessionService tokenSessionService) {
+    public TokenSessionService.TokenPair register(AuthDto.RegisterRequest req) {
         if (users.existsByUsername(req.username())) {
             throw ApiException.conflict("Имя пользователя уже занято");
         }
@@ -110,6 +118,12 @@ public class UserService {
         itemRepo.findAll().stream()
                 .filter(i -> i.ownerId().equals(id))
                 .forEach(i -> itemRepo.deleteById(i.id()));
+
+        sessionRepository.revokeAllActiveByUsername(
+                user.getUsername(),
+                SessionStatus.ACTIVE,
+                SessionStatus.REVOKED
+        );
 
         users.delete(user);
     }

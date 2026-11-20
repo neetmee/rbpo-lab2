@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping({"/api/auth", "/auth"})
 public class AuthController {
 
     private final UserRepository userRepository;
@@ -57,7 +57,7 @@ public class AuthController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public AuthDto.TokenPairResponse register(@Valid @RequestBody AuthDto.RegisterRequest req) {
-        TokenSessionService.TokenPair pair = userService.register(req, tokenSessionService);
+        TokenSessionService.TokenPair pair = userService.register(req);
         return new AuthDto.TokenPairResponse(pair.accessToken(), pair.refreshToken());
     }
 

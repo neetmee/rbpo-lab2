@@ -70,7 +70,10 @@ public class SecurityConfig {
                                 HttpMethod.POST,
                                 "/api/auth/login",
                                 "/api/auth/register",
-                                "/api/auth/refresh"
+                                "/api/auth/refresh",
+                                "/auth/login",
+                                "/auth/register",
+                                "/auth/refresh"
                         ).permitAll()
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
